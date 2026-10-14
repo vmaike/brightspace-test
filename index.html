@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCI Experimental Design & Statistical Analysis Workbench</title>
+    <style>
+        /* CSS Reset and Variables */
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-surface-elevated: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --border-focus: #2563eb;
+            --primary: #1d4ed8;
+            --primary-hover: #1e40af;
+            --primary-light: #eff6ff;
+            --success: #15803d;
+            --success-bg: #f0fdf4;
+            --warning: #b45309;
+            --warning-bg: #fffbeb;
+            --danger: #b91c1c;
+            --danger-bg: #fef2f2;
+            --focus-ring: 3px solid #2563eb;
+            --focus-offset: 2px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-surface: #1e293b;
+            --bg-surface-elevated: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border-color: #475569;
+            --border-focus: #60a5fa;
+            --primary: #3b82f6;
+            --primary-hover: #60a5fa;
+            --primary-light: #1e3a8a;
+            --success: #4ade80;
+            --success-bg: #064e3b;
+            --warning: #fbbf24;
+            --warning-bg: #451a03;
+            --danger: #f87171;
+            --danger-bg: #450a0a;
+            --focus-ring: 3px solid #60a5fa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        /* Skip Link */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 10px;
+            background: var(--primary);
+            color: #ffffff;
+            padding: 8px 16px;
+            z-index: 1000;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: top 0.2s;
+        }
+
+        .skip-link:focus {
+            top: 10px;
+            outline: var(--focus-ring);
+        }
+
+        /* Focus Styling */
+        *:focus-visible {
+            outline: var(--focus-ring);
+            outline-offset: var(--focus-offset);
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--bg-surface);
+            border-bottom: 2px solid var(--border-color);
+            padding: 20px 0;
+            margin-bottom: 24px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            color: var(--text-primary);
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Controls & Theme Toggle */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 18px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--bg-surface-elevated);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.875rem;
+        }
+
+        /* Main Navigation / Tabs */
+        nav[aria-label="Main Navigation"] {
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab-list {
+            display: flex;
+            list-style: none;
+            gap: 8px;
+            overflow-x: auto;
+        }
+
+        .tab-button {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            border-bottom: 4px solid transparent;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .tab-button[aria-selected="true"] {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background-color: var(--bg-surface);
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+        }
+
+        .tab-button:hover:not([aria-selected="true"]) {
+            color: var(--text-primary);
+            background-color: var(--bg-surface-elevated);
+        }
+
+        /* Tab Panels */
+        .tab-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-panel[hidden] {
+            display: none;
+        }
+
+        /* Card / Sections */
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label, legend {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+        .help-text {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--bg-surface);
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--border-focus);
+        }
+
+        fieldset {
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .radio-group, .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .radio-label, .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+
+        input[type="radio"], input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+
+        /* Dynamic Variable Rows */
+        .variable-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 2fr auto;
+            gap: 12px;
+            align-items: end;
+            padding: 12px;
+            background-color: var(--bg-surface-elevated);
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .variable-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Stepper Navigation */
+        .wizard-steps {
+            display: flex;
+            justify-content: space-between;
+            list-style: none;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .wizard-steps::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--border-color);
+            z-index: 1;
+        }
+
+        .step-item {
+            position: relative;
+            z-index: 2;
+            background-color: var(--bg-surface);
+            padding: 0 10px;
+            text-align: center;
+        }
+
+        .step-bubble {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--bg-surface-elevated);
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin: 0 auto 6px auto;
+        }
+
+        .step-item.active .step-bubble {
+            background-color: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .step-item.completed .step-bubble {
+            background-color: var(--success);
+            color: #ffffff;
+            border-color: var(--success);
+        }
+
+        /* Status & Alert Boxes */
+        .alert {
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 6px solid;
+        }
+
+        .alert-info {
+            background-color: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--text-primary);
+        }
+
+        .alert-success {
+            background-color: var(--success-bg);
+            border-color: var(--success);
+            color: var(--text-primary);
+        }
+
+        .alert-warning {
+            background-color: var(--warning-bg);
+            border-color: var(--warning);
+            color: var(--text-primary);
+        }
+
+        .alert-danger {
+            background-color: var(--danger-bg);
+            border-color: var(--danger);
+            color: var(--text-primary);
+        }
+
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--bg-surface-elevated);
+            font-weight: 600;
+        }
+
+        /* Decision Tree / Matrix Visuals */
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .matrix-card {
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px;
+            background-color: var(--bg-surface);
+        }
+
+        .matrix-card.selected {
+            border-color: var(--primary);
+            background-color: var(--primary-light);
+        }
+
+        /* Screen Reader Only Utility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* SVG Chart Styles */
+        .chart-svg {
+            width: 100%;
+            height: 300px;
+            background-color: var(--bg-surface-elevated);
+            border-radius: 6px;
+            margin-top: 16px;
+        }
+
+        .bar {
+            fill: var(--primary);
+            transition: height 0.3s ease;
+        }
+
+        .bar:hover {
+            fill: var(--primary-hover);
+        }
+
+        .axis {
+            stroke: var(--text-secondary);
+            stroke-width: 2;
+        }
+
+        .axis-label {
+            fill: var(--text-primary);
+            font-size: 12px;
+            text-anchor: middle;
+        }
+
+        /* Counterbalancing Grid Visualizer */
+        .latin-square-grid {
+            display: grid;
+            gap: 4px;
+            margin-top: 12px;
+        }
+
+        .latin-cell {
+            padding: 8px;
+            text-align: center;
+            background-color: var(--bg-surface-elevated);
+            border: 1px solid var(--border-color);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- ARIA Live Region for Dynamic Screen Reader Announcements -->
+    <div id="aria-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+    <header>
+        <div class="container header-content">
+            <div>
+                <h1>HCI Experimental Design &amp; Statistical Workbench</h1>
+                <p class="subtitle">A Graduate-Level Interactive Guide for Human-Computer Interaction Research</p>
+            </div>
+            <div>
+                <button id="theme-toggle" class="btn btn-secondary" aria-pressed="false">
+                    <span id="theme-icon" aria-hidden="true">🌙</span>
+                    <span id="theme-text">Switch to Dark Theme</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Main Navigation Tabs -->
+        <nav aria-label="Main Navigation">
+            <ul class="tab-list" role="tablist">
+                <li role="presentation">
+                    <button id="tab-wizard" class="tab-button" role="tab" aria-selected="true" aria-controls="panel-wizard">
+                        1. Experimental Design Wizard
+                    </button>
+                </li>
+                <li role="presentation">
+                    <button id="tab-simulator" class="tab-button" role="tab" aria-selected="false" aria-controls="panel-simulator">
+                        2. Experiment Simulator &amp; Data
+                    </button>
+                </li>
+                <li role="presentation">
+                    <button id="tab-matrix" class="tab-button" role="tab" aria-selected="false" aria-controls="panel-matrix">
+                        3. Stats Decision Tree &amp; Flowchart
+                    </button>
+                </li>
+                <li role="presentation">
+                    <button id="tab-quiz" class="tab-button" role="tab" aria-selected="false" aria-controls="panel-quiz">
+                        4. Knowledge Quiz &amp; Self-Assessment
+                    </button>
+                </li>
+            </ul>
+        </nav>
+
+        <main id="main-content">
+            <!-- TAB 1: EXPERIMENTAL DESIGN WIZARD -->
+            <section id="panel-wizard" class="tab-panel" role="tabpanel" aria-labelledby="tab-wizard">
+                <h2 class="sr-only">Experimental Design Wizard</h2>
+                
+                <!-- Wizard Progress Steps -->
+                <ol class="wizard-steps" aria-label="Wizard Steps Progress">
+                    <li class="step-item active" id="step-nav-1">
+                        <div class="step-bubble" aria-hidden="true">1</div>
+                        <div>Hypotheses</div>
+                    </li>
+                    <li class="step-item" id="step-nav-2">
+                        <div class="step-bubble" aria-hidden="true">2</div>
+                        <div>Variables</div>
+                    </li>
+                    <li class="step-item" id="step-nav-3">
+                        <div class="step-bubble" aria-hidden="true">3</div>
+                        <div>Design Strategy</div>
+                    </li>
+                    <li class="step-item" id="step-nav-4">
+                        <div class="step-bubble" aria-hidden="true">4</div>
+                        <div>Stats Matrix &amp; Test</div>
+                    </li>
+                </ol>
+
+                <!-- Step 1: Research Question & Presets -->
+                <div id="wizard-step-1" class="wizard-step-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Step 1: HCI Research Context &amp; Hypotheses</h3>
+                        </div>
+                        <p class="help-text">Select a pre-populated graduate HCI research scenario or create your custom formulation.</p>
+                        
+                        <div class="form-group">
+                            <label for="hci-preset">Load HCI Preset Scenario (Optional):</label>
+                            <select id="hci-preset">
+                                <option value="">-- Custom Scenario --</option>
+                                <option value="preset-1">Haptic vs. Visual Feedback in AR Precision Target Selection</option>
+                                <option value="preset-2">Fitts' Law Target Selection across 3 Input Devices (Mouse, Trackball, Eye Tracker)</option>
+                                <option value="preset-3">AI Assistant Response Latency (200ms vs 1000ms) vs User Trust &amp; Satisfaction</option>
+                                <option value="preset-4">Screen Reader Layout Navigation Efficiency (Grid vs List Layouts)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="research-question">Research Question:</label>
+                            <input type="text" id="research-question" placeholder="e.g., Does haptic feedback reduce error rates in AR target selection compared to visual feedback alone?">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="null-hypothesis">Null Hypothesis (H₀):</label>
+                            <textarea id="null-hypothesis" rows="2" placeholder="e.g., There is no significant difference in target selection error rates between haptic feedback and visual feedback in AR tasks."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="alt-hypothesis">Alternative Hypothesis (H₁):</label>
+                            <textarea id="alt-hypothesis" rows="2" placeholder="e.g., Target selection error rates will be significantly lower with haptic feedback than with visual feedback alone."></textarea>
+                        </div>
+
+                        <fieldset>
+                            <legend>Hypothesis Directionality</legend>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="hypothesis-direction" value="directional" checked>
+                                    Directional (One-tailed: specifies direction of effect e.g., A > B)
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="hypothesis-direction" value="non-directional">
+                                    Non-directional (Two-tailed: specifies difference exists without direction e.g., A ≠ B)
+                                </label>
+                            </div>
+                        </fieldset>
+
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button class="btn btn-primary" onclick="app.nextWizardStep(2)">Next: Variables &rarr;</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Variables Specification -->
+                <div id="wizard-step-2" class="wizard-step-content" hidden>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Step 2: Specify Variables &amp; Measurement Scales</h3>
+                        </div>
+                        <p class="help-text">Define Independent Variables (IVs), Dependent Variables (DVs), and identify potential confounding variables.</p>
+
+                        <fieldset>
+                            <legend>Independent Variables (IVs) / Factors</legend>
+                            <div id="iv-container">
+                                <!-- Dynamic IV rows injected here -->
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="app.addIV()">+ Add Independent Variable</button>
+                        </fieldset>
+
+                        <fieldset>
+                            <legend>Dependent Variables (DVs) / Metrics</legend>
+                            <div id="dv-container">
+                                <!-- Dynamic DV rows injected here -->
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="app.addDV()">+ Add Dependent Variable</button>
+                        </fieldset>
+
+                        <div class="form-group">
+                            <label for="confounds">Control &amp; Confounding Variables to Mitigate:</label>
+                            <textarea id="confounds" rows="2" placeholder="e.g., User prior experience with AR, ambient room lighting, motor impairment."></textarea>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between;">
+                            <button class="btn btn-secondary" onclick="app.nextWizardStep(1)">&larr; Back</button>
+                            <button class="btn btn-primary" onclick="app.nextWizardStep(3)">Next: Design Strategy &rarr;</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Experimental Design Strategy -->
+                <div id="wizard-step-3" class="wizard-step-content" hidden>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Step 3: Experimental Design Strategy &amp; Counterbalancing</h3>
+                        </div>
+
+                        <fieldset>
+                            <legend>Design Type</legend>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="design-type" value="between" checked onchange="app.updateDesignStrategy()">
+                                    <strong>Between-Subjects (Independent Measures):</strong> Different participants test each condition. Avoids carryover/learning effects; requires larger N.
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="design-type" value="within" onchange="app.updateDesignStrategy()">
+                                    <strong>Within-Subjects (Repeated Measures):</strong> Same participants test all conditions. Higher statistical power, smaller N; susceptible to order/fatigue effects.
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="design-type" value="mixed" onchange="app.updateDesignStrategy()">
+                                    <strong>Mixed Factorial Design:</strong> At least one Between-Subjects IV and one Within-Subjects IV.
+                                </label>
+                            </div>
+                        </fieldset>
+
+                        <!-- Counterbalancing (Conditional on Within/Mixed) -->
+                        <div id="counterbalancing-section" class="card" style="background-color: var(--bg-surface-elevated);">
+                            <div class="card-header">
+                                <h4>Order Effect Mitigation (Counterbalancing)</h4>
+                            </div>
+                            <div class="form-group">
+                                <label for="cb-strategy">Select Counterbalancing Strategy:</label>
+                                <select id="cb-strategy" onchange="app.renderCounterbalancingVisual()">
+                                    <option value="latin-square">Balanced Latin Square (Protects against immediate order effects)</option>
+                                    <option value="full-random">Full Randomization of Condition Sequences</option>
+                                    <option value="complete-counter">Complete Counterbalancing (All N! permutations)</option>
+                                </select>
+                            </div>
+                            <div id="latin-square-visual">
+                                <!-- Rendered Latin square or sequence diagram -->
+                            </div>
+                        </div>
+
+                        <!-- Sample Size Calculator (G*Power Approximation) -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>A Priori Sample Size Estimation (G*Power Approximation)</h4>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                                <div class="form-group">
+                                    <label for="effect-size-est">Expected Effect Size (Cohen's d or f):</label>
+                                    <select id="effect-size-est" onchange="app.calculateSampleSize()">
+                                        <option value="0.2">Small (d = 0.2 / f = 0.1)</option>
+                                        <option value="0.5" selected>Medium (d = 0.5 / f = 0.25)</option>
+                                        <option value="0.8">Large (d = 0.8 / f = 0.40)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="alpha-level">Significance Level (α):</label>
+                                    <select id="alpha-level" onchange="app.calculateSampleSize()">
+                                        <option value="0.05" selected>0.05 (Standard)</option>
+                                        <option value="0.01">0.01 (Strict)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="power-level">Desired Power (1 - β):</label>
+                                    <select id="power-level" onchange="app.calculateSampleSize()">
+                                        <option value="0.80" selected>0.80 (Standard standard)</option>
+                                        <option value="0.90">0.90 (High power)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="sample-size-output" class="alert alert-info" role="region" aria-live="polite">
+                                Recommended Sample Size: Calculating...
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between;">
+                            <button class="btn btn-secondary" onclick="app.nextWizardStep(2)">&larr; Back</button>
+                            <button class="btn btn-primary" onclick="app.nextWizardStep(4)">Next: Statistical Decision Matrix &rarr;</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Statistical Test Recommendation Matrix -->
+                <div id="wizard-step-4" class="wizard-step-content" hidden>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Step 4: Statistical Decision Matrix &amp; Recommended Method</h3>
+                        </div>
+
+                        <div id="test-recommendation-box" class="alert alert-success" role="region" aria-live="polite">
+                            <!-- Dynamic AI/Rules Recommendation populated here -->
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Parametric Assumptions Verification Checklist</h4>
+                            </div>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="assump-scale" checked onchange="app.evaluateAssumptions()">
+                                    DV measured on Interval or Ratio scale (Continuous data)
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="assump-normality" checked onchange="app.evaluateAssumptions()">
+                                    Normality: Data is normally distributed in population (Shapiro-Wilk p > 0.05 or sample > 30)
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="assump-variance" checked onchange="app.evaluateAssumptions()">
+                                    Homogeneity of Variance (Levene's test p > 0.05) or Sphericity (Mauchly's test)
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="assump-independence" checked onchange="app.evaluateAssumptions()">
+                                    Independence of observations (or correctly modeled repeated measures)
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Threats to Validity in Selected HCI Design</h4>
+                            </div>
+                            <div id="validity-threats-list">
+                                <!-- Dynamic validity threats populated based on design selection -->
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>APA Style Reporting Template</h4>
+                            </div>
+                            <pre id="apa-template" style="background-color: var(--bg-surface-elevated); padding: 12px; border-radius: 6px; white-space: pre-wrap; font-family: monospace;"></pre>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                            <button class="btn btn-secondary" onclick="app.nextWizardStep(3)">&larr; Back</button>
+                            <button class="btn btn-primary" onclick="app.switchToSimulator()">Proceed to Experiment Simulator &rarr;</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: EXPERIMENT SIMULATOR & SYNTHETIC DATA -->
+            <section id="panel-simulator" class="tab-panel" role="tabpanel" aria-labelledby="tab-simulator" hidden>
+                <h2>2. HCI Interactive Experiment Simulator</h2>
+                <p class="help-text">Simulate participant trial data based on your experimental parameters and execute statistical analysis in real time.</p>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Simulation Parameters</h3>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+                        <div class="form-group">
+                            <label for="sim-participants">Participants per Group (N):</label>
+                            <input type="number" id="sim-participants" min="5" max="200" value="20">
+                        </div>
+                        <div class="form-group">
+                            <label for="sim-effect">True Ground Effect Size (d):</label>
+                            <select id="sim-effect">
+                                <option value="0.0">No Effect (d = 0.0, H0 true)</option>
+                                <option value="0.3">Small Effect (d = 0.3)</option>
+                                <option value="0.7" selected>Medium-Large Effect (d = 0.7)</option>
+                                <option value="1.2">Very Large Effect (d = 1.2)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="sim-noise">Data Variance / Noise Level:</label>
+                            <select id="sim-noise">
+                                <option value="low">Low Noise (Clean lab setting)</option>
+                                <option value="medium" selected>Moderate Noise (Typical HCI user trial)</option>
+                                <option value="high">High Noise (Field / Uncontrolled study)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="app.runSimulation()">🎲 Run Trial &amp; Generate Data</button>
+                </div>
+
+                <!-- Simulation Output -->
+                <div id="sim-results" class="card" hidden>
+                    <div class="card-header">
+                        <h3>Simulated Statistical Output</h3>
+                    </div>
+
+                    <div id="sim-stat-summary" class="alert alert-info" role="region" aria-live="polite">
+                        <!-- Stat results rendered here -->
+                    </div>
+
+                    <!-- Accessible Visualizer -->
+                    <div>
+                        <h4>Data Distribution Visualizer</h4>
+                        <div id="chart-container" aria-label="Bar chart representing mean performance per condition with error bars" role="img">
+                            <!-- SVG chart rendered dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Accessible Data Table -->
+                    <div style="margin-top: 20px;">
+                        <h4>Synthetic Dataset Summary Table</h4>
+                        <div class="table-responsive">
+                            <table id="sim-data-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Condition / Level</th>
+                                        <th scope="col">Sample Size (n)</th>
+                                        <th scope="col">Mean (M)</th>
+                                        <th scope="col">Std. Deviation (SD)</th>
+                                        <th scope="col">Std. Error (SE)</th>
+                                        <th scope="col">95% CI</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Table rows injected dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card" style="background-color: var(--bg-surface-elevated);">
+                        <h4>Graduate HCI Diagnostic Feedback</h4>
+                        <div id="sim-diagnostic-feedback">
+                            <!-- Injected feedback -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: STATS DECISION TREE & FLOWCHART -->
+            <section id="panel-matrix" class="tab-panel" role="tabpanel" aria-labelledby="tab-matrix" hidden>
+                <h2>3. Interactive HCI Statistical Decision Tree</h2>
+                <p class="help-text">Use this interactive flowchart to determine the correct statistical test for any HCI research design.</p>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Interactive Decision Flowchart</h3>
+                    </div>
+
+                    <div id="flowchart-step-1" class="form-group">
+                        <label for="flow-dv-type">1. What type of measurement scale is your primary Dependent Variable (DV)?</label>
+                        <select id="flow-dv-type" onchange="app.evaluateFlowchart()">
+                            <option value="">-- Select DV Type --</option>
+                            <option value="continuous">Continuous (Interval/Ratio - e.g., Task time in seconds, Error rate %)</option>
+                            <option value="ordinal">Ordinal / Likert Scale (e.g., SUS Score, 1-7 Rating scale)</option>
+                            <option value="nominal">Nominal / Categorical (e.g., Target Hit/Miss, Task Success Binary)</option>
+                        </select>
+                    </div>
+
+                    <div id="flowchart-step-2" class="form-group" hidden>
+                        <label for="flow-iv-count">2. How many Independent Variables (IVs / Factors) are you manipulating?</label>
+                        <select id="flow-iv-count" onchange="app.evaluateFlowchart()">
+                            <option value="">-- Select IV Count --</option>
+                            <option value="1">1 Independent Variable</option>
+                            <option value="2">2 or more Independent Variables (Factorial Design)</option>
+                        </select>
+                    </div>
+
+                    <div id="flowchart-step-3" class="form-group" hidden>
+                        <label for="flow-design-structure">3. What is the assignment structure of the subjects across conditions?</label>
+                        <select id="flow-design-structure" onchange="app.evaluateFlowchart()">
+                            <option value="">-- Select Design Structure --</option>
+                            <option value="between">Between-Subjects (2 Independent Groups)</option>
+                            <option value="between-multi">Between-Subjects (3+ Independent Groups)</option>
+                            <option value="within">Within-Subjects / Repeated Measures (2 Conditions)</option>
+                            <option value="within-multi">Within-Subjects / Repeated Measures (3+ Conditions)</option>
+                            <option value="mixed">Mixed Design (Between + Within factors)</option>
+                        </select>
+                    </div>
+
+                    <div id="flowchart-result" class="alert alert-success" hidden role="region" aria-live="polite">
+                        <!-- Result card -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: KNOWLEDGE QUIZ & SELF-ASSESSMENT -->
+            <section id="panel-quiz" class="tab-panel" role="tabpanel" aria-labelledby="tab-quiz" hidden>
+                <h2>4. Graduate HCI Experimental Design Quiz</h2>
+                <p class="help-text">Test your mastery of HCI experimental design, variable operationalization, and statistical test selection.</p>
+
+                <div id="quiz-container">
+                    <!-- Dynamic quiz questions injected here -->
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="app.submitQuiz()">Submit Quiz &amp; Grade</button>
+                    <button class="btn btn-secondary" onclick="app.resetQuiz()">Reset Quiz</button>
+                </div>
+
+                <div id="quiz-score-card" class="card" style="margin-top: 20px;" hidden role="region" aria-live="polite">
+                    <h3>Quiz Results</h3>
+                    <p id="quiz-score-text" style="font-size: 1.2rem; font-weight: bold;"></p>
+                    <div id="quiz-detailed-feedback"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        /**
+         * HCI Experimental Design & Statistical Analysis Workbench
+         * Clean Modular Vanilla JS Engine
+         */
+
+        const HCI_PRESETS = {
+            'preset-1': {
+                rq: "Does haptic tactile feedback reduce target selection error rates in AR head-mounted displays compared to visual feedback alone?",
+                h0: "There is no difference in mean target selection error rates between haptic tactile feedback and visual feedback in AR tasks.",
+                h1: "Target selection error rates will be significantly lower with haptic tactile feedback than with visual feedback alone.",
+                direction: "directional",
+                ivs: [{ name: "Feedback Type", levels: "Haptic+Visual, Visual-Only", type: "nominal" }],
+                dvs: [{ name: "Error Rate", scale: "ratio", unit: "percentage of missed targets" }],
+                design: "within",
+                confounds: "Participant prior HMD experience, hand tremor, finger size."
+            },
+            'preset-2': {
+                rq: "How do Mouse, Trackball, and Eye Tracker compare regarding target acquisition time across various Fitts' law ID levels?",
+                h0: "Mean target acquisition time does not differ significantly across Mouse, Trackball, and Eye Tracker devices.",
+                h1: "Eye Tracker target acquisition time will be significantly faster than Mouse and Trackball across all index of difficulty levels.",
+                direction: "directional",
+                ivs: [
+                    { name: "Input Device", levels: "Mouse, Trackball, Eye Tracker", type: "nominal" },
+                    { name: "Index of Difficulty (ID)", levels: "Low (2 bits), Medium (4 bits), High (6 bits)", type: "ordinal" }
+                ],
+                dvs: [{ name: "Target Acquisition Time", scale: "ratio", unit: "milliseconds" }],
+                design: "within",
+                confounds: "Eye fatigue, calibration drift, motor learning effects."
+            },
+            'preset-3': {
+                rq: "What is the impact of conversational AI latency (200ms vs 1000ms) on user trust and subjective task satisfaction?",
+                h0: "AI latency variations of 200ms vs 1000ms have no significant effect on user trust ratings or SUS satisfaction scores.",
+                h1: "Users interacting with 200ms latency AI will report significantly higher trust and task satisfaction scores than with 1000ms latency.",
+                direction: "directional",
+                ivs: [{ name: "AI Latency", levels: "200ms, 1000ms", type: "ratio" }],
+                dvs: [
+                    { name: "User Trust Score", scale: "interval", unit: "1-7 Likert scale" },
+                    { name: "System Usability Scale (SUS)", scale: "interval", unit: "0-100 scale" }
+                ],
+                design: "between",
+                confounds: "Conversational prompt complexity, user general attitude towards AI."
+            },
+            'preset-4': {
+                rq: "Does a 2D Spatial Grid screen reader layout improve navigation efficiency compared to a standard linear List layout for blind users?",
+                h0: "There is no difference in completion times for navigation tasks between Spatial Grid layout and Linear List layout for screen reader users.",
+                h1: "Navigation completion times will be significantly faster using Spatial Grid layout compared to Linear List layout.",
+                direction: "directional",
+                ivs: [{ name: "Screen Reader Layout", levels: "Spatial Grid, Linear List", type: "nominal" }],
+                dvs: [{ name: "Task Completion Time", scale: "ratio", unit: "seconds" }],
+                design: "within",
+                confounds: "Screen reader expertise level, keyboard shortcut familiarity."
+            }
+        };
+
+        const QUIZ_QUESTIONS = [
+            {
+                id: 1,
+                question: "An HCI researcher compares task completion time (in seconds) between two independent groups of users: one using a Gesture interface and another using a Touchscreen interface. Assuming parametric assumptions hold, which statistical test is most appropriate?",
+                options: [
+                    "Paired-samples t-test",
+                    "Independent-samples t-test",
+                    "One-way Repeated Measures ANOVA",
+                    "Mann-Whitney U Test"
+                ],
+                correct: 1,
+                explanation: "Correct! The independent variable has 2 levels (Gesture vs Touchscreen), assigned between-subjects (independent groups), and the DV (task completion time in seconds) is continuous on a ratio scale. Thus, an Independent-samples t-test is appropriate."
+            },
+            {
+                id: 2,
+                question: "In a Within-Subjects study evaluated with 3 input conditions (Stylus, Finger, Mouse), every participant tests all 3 conditions. The DV is user satisfaction rating on a 7-point Likert scale, and data violates normality assumptions. Which non-parametric test should be used?",
+                options: [
+                    "Kruskal-Wallis Test",
+                    "Friedman Test",
+                    "Wilcoxon Signed-Rank Test",
+                    "Two-Way Factorial ANOVA"
+                ],
+                correct: 1,
+                explanation: "Correct! The Friedman test is the non-parametric alternative to the One-Way Repeated Measures ANOVA when comparing 3 or more matched/within-subject conditions on ordinal or non-normal data."
+            },
+            {
+                id: 3,
+                question: "Why is a Latin Square design used in within-subjects HCI experiments?",
+                options: [
+                    "To eliminate sample size requirements.",
+                    "To counterbalance condition presentation order and mitigate fatigue or learning effects.",
+                    "To convert qualitative subjective feedback into quantitative ratio scales.",
+                    "To test for homogeneity of variance across independent groups."
+                ],
+                correct: 1,
+                explanation: "Correct! A Balanced Latin Square ensures each condition appears in each ordinal position equally often and follows every other condition equally often, controlling for order, practice, and fatigue carryover effects."
+            },
+            {
+                id: 4,
+                question: "A study measures the effect of 2 Menu Layouts (Radial vs Ribbon) across 2 Expertise Levels (Novice vs Expert) on task error rates. Both IVs are manipulated, where Layout is tested within-subjects and Expertise is a between-subjects grouping variable. What design is this?",
+                options: [
+                    "Single factor between-subjects design",
+                    "2x2 Mixed Factorial Design",
+                    "3-Way Fully Repeated Measures Design",
+                    "Chi-square test of independence"
+                ],
+                correct: 1,
+                explanation: "Correct! This is a 2x2 Mixed Factorial Design because it combines one Between-Subjects factor (Expertise Level) and one Within-Subjects factor (Menu Layout)."
+            }
+        ];
+
+        class HCIWorkbenchApp {
+            constructor() {
+                this.currentTab = 'wizard';
+                this.currentWizardStep = 1;
+                this.ivCount = 0;
+                this.dvCount = 0;
+                this.simData = null;
+                
+                this.initTheme();
+                this.initEventListeners();
+                this.initDefaults();
+            }
+
+            initTheme() {
+                const savedTheme = localStorage.getItem('hci_workbench_theme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                this.updateThemeUI(savedTheme);
+            }
+
+            toggleTheme() {
+                const current = document.documentElement.getAttribute('data-theme');
+                const next = current === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                localStorage.setItem('hci_workbench_theme', next);
+                this.updateThemeUI(next);
+                this.announce(`Switched to ${next} theme mode.`);
+            }
+
+            updateThemeUI(theme) {
+                const btnText = document.getElementById('theme-text');
+                const btnIcon = document.getElementById('theme-icon');
+                const btn = document.getElementById('theme-toggle');
+                
+                if (theme === 'dark') {
+                    btnText.textContent = 'Switch to Light Theme';
+                    btnIcon.textContent = '☀️';
+                    btn.setAttribute('aria-pressed', 'true');
+                } else {
+                    btnText.textContent = 'Switch to Dark Theme';
+                    btnIcon.textContent = '🌙';
+                    btn.setAttribute('aria-pressed', 'false');
+                }
+            }
+
+            announce(message) {
+                const announcer = document.getElementById('aria-announcer');
+                if (announcer) {
+                    announcer.textContent = message;
+                }
+            }
+
+            initEventListeners() {
+                // Theme Toggle
+                document.getElementById('theme-toggle').addEventListener('click', () => this.toggleTheme());
+
+                // Main Navigation Tabs
+                const tabButtons = document.querySelectorAll('.tab-button');
+                tabButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const targetPanelId = btn.getAttribute('aria-controls');
+                        this.switchTab(btn, targetPanelId);
+                    });
+
+                    // Keyboard Left/Right Arrow Navigation
+                    btn.addEventListener('keydown', (e) => {
+                        const tabs = Array.from(tabButtons);
+                        const index = tabs.indexOf(btn);
+                        let targetIndex = null;
+
+                        if (e.key === 'ArrowRight') {
+                            targetIndex = (index + 1) % tabs.length;
+                        } else if (e.key === 'ArrowLeft') {
+                            targetIndex = (index - 1 + tabs.length) % tabs.length;
+                        }
+
+                        if (targetIndex !== null) {
+                            tabs[targetIndex].focus();
+                            tabs[targetIndex].click();
+                        }
+                    });
+                });
+
+                // Preset Dropdown Listener
+                document.getElementById('hci-preset').addEventListener('change', (e) => {
+                    this.loadPreset(e.target.value);
+                });
+            }
+
+            switchTab(selectedBtn, panelId) {
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.setAttribute('aria-selected', 'false');
+                });
+                document.querySelectorAll('.tab-panel').forEach(panel => {
+                    panel.hidden = true;
+                });
+
+                selectedBtn.setAttribute('aria-selected', 'true');
+                const targetPanel = document.getElementById(panelId);
+                targetPanel.hidden = false;
+                
+                this.announce(`Navigated to ${selectedBtn.textContent.trim()} tab.`);
+            }
+
+            initDefaults() {
+                this.addIV("Feedback Technique", "Haptic, Visual", "nominal");
+                this.addDV("Task Completion Time", "ratio", "seconds");
+                this.renderCounterbalancingVisual();
+                this.calculateSampleSize();
+                this.renderQuiz();
+            }
+
+            loadPreset(presetKey) {
+                if (!presetKey || !HCI_PRESETS[presetKey]) return;
+                const p = HCI_PRESETS[presetKey];
+
+                document.getElementById('research-question').value = p.rq;
+                document.getElementById('null-hypothesis').value = p.h0;
+                document.getElementById('alt-hypothesis').value = p.h1;
+
+                // Set hypothesis direction
+                const rads = document.getElementsByName('hypothesis-direction');
+                rads.forEach(r => { if (r.value === p.direction) r.checked = true; });
+
+                // Clear dynamic IVs/DVs
+                document.getElementById('iv-container').innerHTML = '';
+                document.getElementById('dv-container').innerHTML = '';
+                this.ivCount = 0;
+                this.dvCount = 0;
+
+                p.ivs.forEach(iv => this.addIV(iv.name, iv.levels, iv.type));
+                p.dvs.forEach(dv => this.addDV(dv.name, dv.scale, dv.unit));
+
+                document.getElementById('confounds').value = p.confounds;
+
+                // Radio for design type
+                const designRads = document.getElementsByName('design-type');
+                designRads.forEach(r => { if (r.value === p.design) r.checked = true; });
+
+                this.updateDesignStrategy();
+                this.announce(`Loaded preset scenario: ${p.rq}`);
+            }
+
+            addIV(name = '', levels = '', type = 'nominal') {
+                this.ivCount++;
+                const container = document.getElementById('iv-container');
+                const div = document.createElement('div');
+                div.className = 'variable-row';
+                div.id = `iv-row-${this.ivCount}`;
+                div.innerHTML = `
+                    <div>
+                        <label for="iv-name-${this.ivCount}">Independent Variable Name</label>
+                        <input type="text" id="iv-name-${this.ivCount}" value="${name}" placeholder="e.g., Target Size">
+                    </div>
+                    <div>
+                        <label for="iv-type-${this.ivCount}">Data Scale</label>
+                        <select id="iv-type-${this.ivCount}">
+                            <option value="nominal" ${type === 'nominal' ? 'selected' : ''}>Nominal / Categorical</option>
+                            <option value="ordinal" ${type === 'ordinal' ? 'selected' : ''}>Ordinal</option>
+                            <option value="ratio" ${type === 'ratio' ? 'selected' : ''}>Interval/Ratio (Discrete/Continuous)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="iv-levels-${this.ivCount}">Levels / Conditions (Comma Separated)</label>
+                        <input type="text" id="iv-levels-${this.ivCount}" value="${levels}" placeholder="e.g., Small, Medium, Large">
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-secondary btn-sm" aria-label="Remove IV ${this.ivCount}" onclick="app.removeRow('iv-row-${this.ivCount}')">🗑️ Remove</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            }
+
+            addDV(name = '', scale = 'ratio', unit = '') {
+                this.dvCount++;
+                const container = document.getElementById('dv-container');
+                const div = document.createElement('div');
+                div.className = 'variable-row';
+                div.id = `dv-row-${this.dvCount}`;
+                div.innerHTML = `
+                    <div>
+                        <label for="dv-name-${this.dvCount}">Dependent Variable Name</label>
+                        <input type="text" id="dv-name-${this.dvCount}" value="${name}" placeholder="e.g., Error Rate">
+                    </div>
+                    <div>
+                        <label for="dv-scale-${this.dvCount}">Measurement Scale</label>
+                        <select id="dv-scale-${this.dvCount}">
+                            <option value="ratio" ${scale === 'ratio' ? 'selected' : ''}>Ratio (True Zero - e.g., Time in s, Error count)</option>
+                            <option value="interval" ${scale === 'interval' ? 'selected' : ''}>Interval (e.g., SUS Score 0-100, Likert Scale)</option>
+                            <option value="ordinal" ${scale === 'ordinal' ? 'selected' : ''}>Ordinal (Rankings)</option>
+                            <option value="nominal" ${scale === 'nominal' ? 'selected' : ''}>Nominal / Binary (Success/Failure)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="dv-unit-${this.dvCount}">Measurement Unit</label>
+                        <input type="text" id="dv-unit-${this.dvCount}" value="${unit}" placeholder="e.g., ms, %, 1-7 scale">
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-secondary btn-sm" aria-label="Remove DV ${this.dvCount}" onclick="app.removeRow('dv-row-${this.dvCount}')">🗑️ Remove</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            }
+
+            removeRow(rowId) {
+                const el = document.getElementById(rowId);
+                if (el) {
+                    el.remove();
+                    this.announce('Variable removed.');
+                }
+            }
+
+            nextWizardStep(stepNumber) {
+                document.querySelectorAll('.wizard-step-content').forEach(s => s.hidden = true);
+                document.getElementById(`wizard-step-${stepNumber}`).hidden = false;
+
+                // Update Wizard Step Header Indicators
+                for (let i = 1; i <= 4; i++) {
+                    const navItem = document.getElementById(`step-nav-${i}`);
+                    navItem.classList.remove('active', 'completed');
+                    if (i < stepNumber) {
+                        navItem.classList.add('completed');
+                    } else if (i === stepNumber) {
+                        navItem.classList.add('active');
+                    }
+                }
+
+                this.currentWizardStep = stepNumber;
+
+                if (stepNumber === 4) {
+                    this.evaluateStatisticalMethod();
+                }
+
+                this.announce(`Navigated to Wizard Step ${stepNumber}.`);
+            }
+
+            updateDesignStrategy() {
+                const designType = document.querySelector('input[name="design-type"]:checked').value;
+                const cbSection = document.getElementById('counterbalancing-section');
+                
+                if (designType === 'within' || designType === 'mixed') {
+                    cbSection.hidden = false;
+                    this.renderCounterbalancingVisual();
+                } else {
+                    cbSection.hidden = true;
+                }
+                this.calculateSampleSize();
+            }
+
+            renderCounterbalancingVisual() {
+                const strategy = document.getElementById('cb-strategy').value;
+                const container = document.getElementById('latin-square-visual');
+
+                if (strategy === 'latin-square') {
+                    container.innerHTML = `
+                        <p class="help-text">Balanced 4x4 Latin Square Structure (Conditions A, B, C, D):</p>
+                        <div class="latin-square-grid" style="grid-template-columns: repeat(4, 1fr);">
+                            <div class="latin-cell">A</div><div class="latin-cell">B</div><div class="latin-cell">D</div><div class="latin-cell">C</div>
+                            <div class="latin-cell">B</div><div class="latin-cell">C</div><div class="latin-cell">A</div><div class="latin-cell">D</div>
+                            <div class="latin-cell">C</div><div class="latin-cell">D</div><div class="latin-cell">B</div><div class="latin-cell">A</div>
+                            <div class="latin-cell">D</div><div class="latin-cell">A</div><div class="latin-cell">C</div><div class="latin-cell">B</div>
+                        </div>
+                        <p style="font-size: 0.85rem; margin-top: 6px; color: var(--text-muted);">Ensures each condition appears in each position and follows every other condition immediately once.</p>
+                    `;
+                } else if (strategy === 'full-random') {
+                    container.innerHTML = `
+                        <p class="help-text">Randomized Sequence Order:</p>
+                        <div style="background-color: var(--bg-surface); padding: 12px; border-radius: 4px; border: 1px solid var(--border-color);">
+                            Participant 1: B &rarr; A &rarr; C &rarr; D<br>
+                            Participant 2: D &rarr; C &rarr; A &rarr; B<br>
+                            Participant 3: A &rarr; C &rarr; D &rarr; B ...
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <p class="help-text">Complete Counterbalancing (All N! = 24 permutations for 4 conditions):</p>
+                        <p style="font-size: 0.875rem;">Requires participant sample size to be a multiple of 24.</p>
+                    `;
+                }
+            }
+
+            calculateSampleSize() {
+                const effect = parseFloat(document.getElementById('effect-size-est').value);
+                const alpha = parseFloat(document.getElementById('alpha-level').value);
+                const power = parseFloat(document.getElementById('power-level').value);
+                const designType = document.querySelector('input[name="design-type"]:checked').value;
+
+                // Approximate sample size computation for HCI research
+                let baseN = Math.round((16 / (effect * effect)) * (power / 0.80) * (alpha === 0.01 ? 1.35 : 1.0));
+                
+                if (designType === 'within') {
+                    baseN = Math.max(12, Math.round(baseN * 0.55)); // Repeated measures requires fewer total N
+                }
+
+                const out = document.getElementById('sample-size-output');
+                out.innerHTML = `
+                    <strong>Estimated Recommended Sample Size:</strong> N = ${baseN} total participants 
+                    <em>(${designType === 'between' ? `~${Math.ceil(baseN/2)} per group` : 'all participants experience all conditions'})</em>.<br>
+                    <small>Calculated for expected effect size ${effect}, α = ${alpha}, and desired power = ${power}.</small>
+                `;
+            }
+
+            evaluateStatisticalMethod() {
+                const designType = document.querySelector('input[name="design-type"]:checked').value;
+                
+                // Get primary DV scale
+                const dvSelect = document.querySelector('[id^="dv-scale-"]');
+                const dvScale = dvSelect ? dvSelect.value : 'ratio';
+
+                const ivRows = document.querySelectorAll('[id^="iv-row-"]');
+                const ivCount = ivRows.length;
+
+                let recommendedTest = "";
+                let rationale = "";
+                let apaFormat = "";
+
+                const isParametric = (dvScale === 'ratio' || dvScale === 'interval') && document.getElementById('assump-normality').checked;
+
+                if (ivCount <= 1) {
+                    if (designType === 'between') {
+                        if (isParametric) {
+                            recommendedTest = "Independent-Samples t-test (or One-Way ANOVA if >2 levels)";
+                            rationale = "You have 1 IV with between-subjects group comparisons and a continuous DV satisfying parametric assumptions.";
+                            apaFormat = "t(df) = t-value, p = p-value, Cohen's d = d-value\nExample: t(38) = 2.45, p = .019, d = 0.78";
+                        } else {
+                            recommendedTest = "Mann-Whitney U Test (or Kruskal-Wallis if >2 levels)";
+                            rationale = "You have a between-subjects design but your DV is ordinal or violates normality assumptions.";
+                            apaFormat = "U = U-value, Z = z-score, p = p-value, r = effect size\nExample: U = 112.5, Z = -2.14, p = .032, r = 0.35";
+                        }
+                    } else if (designType === 'within') {
+                        if (isParametric) {
+                            recommendedTest = "Paired-Samples / Repeated-Measures t-test (or Repeated Measures ANOVA if >2 levels)";
+                            rationale = "You have a within-subjects repeated measures design on continuous DV satisfying parametric assumptions.";
+                            apaFormat = "t(df) = t-value, p = p-value, Cohen's d = d-value\nExample: t(19) = -3.82, p = .001, d = 0.85";
+                        } else {
+                            recommendedTest = "Wilcoxon Signed-Rank Test (or Friedman Test if >2 levels)";
+                            rationale = "You have paired/repeated measures on ordinal DV or data violating normality.";
+                            apaFormat = "W = W-value, Z = z-score, p = p-value\nExample: Z = -2.94, p = .003";
+                        }
+                    } else {
+                        recommendedTest = "Two-Way Factorial / Mixed ANOVA";
+                        rationale = "Mixed design combining between and within subjects factors.";
+                        apaFormat = "F(df1, df2) = F-value, p = p-value, η²_p = partial eta squared";
+                    }
+                } else {
+                    if (isParametric) {
+                        recommendedTest = designType === 'mixed' ? "2x2 Mixed Factorial ANOVA" : "Two-Way Factorial ANOVA";
+                        rationale = "You are manipulating 2 or more Independent Variables simultaneously on a continuous scale metric.";
+                        apaFormat = "Main effect IV1: F(1, 36) = 5.21, p = .028, η²_p = .13\nInteraction IV1 x IV2: F(1, 36) = 8.44, p = .006, η²_p = .19";
+                    } else {
+                        recommendedTest = "Non-Parametric Factorial Scheirer-Ray-Hare Test or Ordinal Logistic Regression";
+                        rationale = "Multi-factor HCI evaluation with non-parametric or ordinal rating data.";
+                        apaFormat = "H = statistic value, df = degrees of freedom, p = p-value";
+                    }
+                }
+
+                const recBox = document.getElementById('test-recommendation-box');
+                recBox.innerHTML = `
+                    <h4>Recommended Statistical Method: ${recommendedTest}</h4>
+                    <p style="margin-top: 6px;"><strong>Rationale:</strong> ${rationale}</p>
+                `;
+
+                document.getElementById('apa-template').textContent = apaFormat;
+                this.evaluateAssumptions();
+                this.updateValidityThreats(designType);
+            }
+
+            evaluateAssumptions() {
+                const norm = document.getElementById('assump-normality').checked;
+                const scale = document.getElementById('assump-scale').checked;
+                
+                if (!norm || !scale) {
+                    this.announce("Parametric assumptions violated. Recommending non-parametric test alternative.");
+                }
+            }
+
+            updateValidityThreats(designType) {
+                const container = document.getElementById('validity-threats-list');
+                if (designType === 'within') {
+                    container.innerHTML = `
+                        <ul style="padding-left: 20px;">
+                            <li><strong>Carryover / Order Effects:</strong> Performance in second condition influenced by practice or exposure in first. <em>Mitigation: Counterbalancing / Latin Square.</em></li>
+                            <li><strong>Fatigue Effect:</strong> Decline in performance over long experimental sessions. <em>Mitigation: Mandatory rest breaks.</em></li>
+                            <li><strong>Asymmetric Skill Learning:</strong> Learning curve uneven between condition orders.</li>
+                        </ul>
+                    `;
+                } else if (designType === 'between') {
+                    container.innerHTML = `
+                        <ul style="padding-left: 20px;">
+                            <li><strong>Individual Differences / Selection Bias:</strong> Groups might differ inherently in baseline motor or cognitive skills. <em>Mitigation: Random assignment, pre-screening.</em></li>
+                            <li><strong>Higher Variance:</strong> Inter-subject variance increases noise, requiring larger N.</li>
+                        </ul>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <ul style="padding-left: 20px;">
+                            <li><strong>Between-Within Interactions:</strong> Complex interaction effects where group characteristics moderate intervention impact.</li>
+                        </ul>
+                    `;
+                }
+            }
+
+            switchToSimulator() {
+                const tabSim = document.getElementById('tab-simulator');
+                tabSim.click();
+            }
+
+            runSimulation() {
+                const n = parseInt(document.getElementById('sim-participants').value) || 20;
+                const effectSize = parseFloat(document.getElementById('sim-effect').value);
+                const noiseStr = document.getElementById('sim-noise').value;
+                const noiseSd = noiseStr === 'low' ? 5 : noiseStr === 'medium' ? 12 : 25;
+
+                // Generate two simulated condition distributions
+                const m1 = 100;
+                const m2 = m1 - (effectSize * noiseSd);
+
+                const groupA = [];
+                const groupB = [];
+
+                for (let i = 0; i < n; i++) {
+                    groupA.push(this.gaussianRandom(m1, noiseSd));
+                    groupB.push(this.gaussianRandom(m2, noiseSd));
+                }
+
+                const statsA = this.calcStats(groupA);
+                const statsB = this.calcStats(groupB);
+
+                // Run Welch's t-test
+                const tRes = this.welchTTest(groupA, groupB);
+
+                this.simData = { groupA, groupB, statsA, statsB, tRes, n };
+                this.renderSimulationResults();
+            }
+
+            gaussianRandom(mean, stdev) {
+                const u = 1 - Math.random();
+                const v = Math.random();
+                const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+                return Math.max(1, mean + z * stdev);
+            }
+
+            calcStats(arr) {
+                const n = arr.length;
+                const mean = arr.reduce((a, b) => a + b, 0) / n;
+                const variance = arr.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (n - 1);
+                const sd = Math.sqrt(variance);
+                const se = sd / Math.sqrt(n);
+                const ci95 = 1.96 * se;
+                return { n, mean, sd, se, ci95 };
+            }
+
+            welchTTest(a, b) {
+                const sA = this.calcStats(a);
+                const sB = this.calcStats(b);
+
+                const seDiff = Math.sqrt((sA.sd * sA.sd / sA.n) + (sB.sd * sB.sd / sB.n));
+                const t = (sA.mean - sB.mean) / seDiff;
+
+                // Welch-Satterthwaite df
+                const vA = sA.sd * sA.sd / sA.n;
+                const vB = sB.sd * sB.sd / sB.n;
+                const df = Math.pow(vA + vB, 2) / ((Math.pow(vA, 2) / (sA.n - 1)) + (Math.pow(vB, 2) / (sB.n - 1)));
+
+                // Approximate p-value standard normal approximation
+                const z = Math.abs(t);
+                const pApprox = 2 * (1 - this.approxNormalCDF(z));
+
+                const cohenD = Math.abs(sA.mean - sB.mean) / Math.sqrt((sA.sd * sA.sd + sB.sd * sB.sd) / 2);
+
+                return { t, df, p: pApprox, cohenD };
+            }
+
+            approxNormalCDF(x) {
+                const t = 1 / (1 + 0.2316419 * Math.abs(x));
+                const d = 0.3989423 * Math.exp(-x * x / 2);
+                const prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+                return x >= 0 ? 1 - prob : prob;
+            }
+
+            renderSimulationResults() {
+                const resDiv = document.getElementById('sim-results');
+                resDiv.hidden = false;
+
+                const { statsA, statsB, tRes, n } = this.simData;
+
+                const summary = document.getElementById('sim-stat-summary');
+                const isSig = tRes.p < 0.05;
+
+                summary.className = `alert ${isSig ? 'alert-success' : 'alert-warning'}`;
+                summary.innerHTML = `
+                    <h4>Statistical Test Results: Independent Samples t-Test</h4>
+                    <p><strong>t(${tRes.df.toFixed(1)}) = ${tRes.t.toFixed(2)}, p = ${tRes.p < 0.001 ? '< .001' : tRes.p.toFixed(3)}, Cohen's d = ${tRes.cohenD.toFixed(2)}</strong></p>
+                    <p>${isSig ? '✅ <strong>Statistically Significant Result:</strong> Reject H₀. The performance difference between conditions is statistically reliable.' : '⚠️ <strong>Non-Significant Result:</strong> Fail to reject H₀. Insufficient statistical evidence of difference at α = 0.05.'}</p>
+                `;
+
+                // Update Data Table
+                const tbody = document.querySelector('#sim-data-table tbody');
+                tbody.innerHTML = `
+                    <tr>
+                        <th scope="row">Condition A (Baseline)</th>
+                        <td>${statsA.n}</td>
+                        <td>${statsA.mean.toFixed(2)}</td>
+                        <td>${statsA.sd.toFixed(2)}</td>
+                        <td>${statsA.se.toFixed(2)}</td>
+                        <td>± ${statsA.ci95.toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Condition B (Treatment)</th>
+                        <td>${statsB.n}</td>
+                        <td>${statsB.mean.toFixed(2)}</td>
+                        <td>${statsB.sd.toFixed(2)}</td>
+                        <td>${statsB.se.toFixed(2)}</td>
+                        <td>± ${statsB.ci95.toFixed(2)}</td>
+                    </tr>
+                `;
+
+                // Render SVG Bar Chart
+                this.renderSVGChart(statsA, statsB);
+
+                // Injected Diagnostic Feedback
+                const feedback = document.getElementById('sim-diagnostic-feedback');
+                feedback.innerHTML = `
+                    <p><strong>Methodological Analysis:</strong></p>
+                    <ul>
+                        <li>Sample Size Sensitivity: With N = ${n} per condition, your study had approximately ${tRes.cohenD > 0.5 ? 'sufficient' : 'marginal'} power to detect this effect.</li>
+                        <li>APA Reporting: <em>t</em>(${tRes.df.toFixed(1)}) = ${tRes.t.toFixed(2)}, <em>p</em> = ${tRes.p < .001 ? '.001' : tRes.p.toFixed(3)}, <em>d</em> = ${tRes.cohenD.toFixed(2)}.</li>
+                    </ul>
+                `;
+
+                this.announce("Simulation completed and results generated.");
+            }
+
+            renderSVGChart(sA, sB) {
+                const container = document.getElementById('chart-container');
+                const maxVal = Math.max(sA.mean + sA.ci95, sB.mean + sB.ci95) * 1.2;
+
+                const hA = (sA.mean / maxVal) * 200;
+                const hB = (sB.mean / maxVal) * 200;
+
+                const errA1 = ((sA.mean - sA.ci95) / maxVal) * 200;
+                const errA2 = ((sA.mean + sA.ci95) / maxVal) * 200;
+
+                const errB1 = ((sB.mean - sB.ci95) / maxVal) * 200;
+                const errB2 = ((sB.mean + sB.ci95) / maxVal) * 200;
+
+                container.innerHTML = `
+                    <svg class="chart-svg" viewBox="0 0 400 260" role="img" aria-label="Bar chart showing mean task time for Condition A vs Condition B with 95% confidence intervals">
+                        <!-- Y Axis -->
+                        <line x1="50" y1="20" x2="50" y2="220" class="axis" />
+                        <!-- X Axis -->
+                        <line x1="50" y1="220" x2="350" y2="220" class="axis" />
+
+                        <!-- Bar A -->
+                        <rect x="90" y="${220 - hA}" width="60" height="${hA}" class="bar" />
+                        <text x="120" y="240" class="axis-label">Condition A</text>
+                        <!-- Error Bar A -->
+                        <line x1="120" y1="${220 - errA1}" x2="120" y2="${220 - errA2}" stroke="#000" stroke-width="2" />
+                        <line x1="110" y1="${220 - errA2}" x2="130" y2="${220 - errA2}" stroke="#000" stroke-width="2" />
+                        <line x1="110" y1="${220 - errA1}" x2="130" y2="${220 - errA1}" stroke="#000" stroke-width="2" />
+
+                        <!-- Bar B -->
+                        <rect x="230" y="${220 - hB}" width="60" height="${hB}" class="bar" />
+                        <text x="260" y="240" class="axis-label">Condition B</text>
+                        <!-- Error Bar B -->
+                        <line x1="260" y1="${220 - errB1}" x2="260" y2="${220 - errB2}" stroke="#000" stroke-width="2" />
+                        <line x1="250" y1="${220 - errB2}" x2="270" y2="${220 - errB2}" stroke="#000" stroke-width="2" />
+                        <line x1="250" y1="${220 - errB1}" x2="270" y2="${220 - errB1}" stroke="#000" stroke-width="2" />
+                    </svg>
+                `;
+            }
+
+            evaluateFlowchart() {
+                const dv = document.getElementById('flow-dv-type').value;
+                const step2 = document.getElementById('flowchart-step-2');
+                const step3 = document.getElementById('flowchart-step-3');
+                const res = document.getElementById('flowchart-result');
+
+                if (!dv) {
+                    step2.hidden = true;
+                    step3.hidden = true;
+                    res.hidden = true;
+                    return;
+                }
+
+                step2.hidden = false;
+                const ivCount = document.getElementById('flow-iv-count').value;
+
+                if (!ivCount) {
+                    step3.hidden = true;
+                    res.hidden = true;
+                    return;
+                }
+
+                step3.hidden = false;
+                const struct = document.getElementById('flow-design-structure').value;
+
+                if (!struct) {
+                    res.hidden = true;
+                    return;
+                }
+
+                res.hidden = false;
+                let test = "";
+
+                if (dv === 'continuous') {
+                    if (ivCount === '1') {
+                        if (struct === 'between') test = "Independent-Samples t-test";
+                        else if (struct === 'between-multi') test = "One-Way Between-Subjects ANOVA";
+                        else if (struct === 'within') test = "Paired-Samples t-test";
+                        else if (struct === 'within-multi') test = "One-Way Repeated Measures ANOVA";
+                        else test = "Mixed Factorial ANOVA";
+                    } else {
+                        if (struct === 'between') test = "Two-Way Factorial Between-Subjects ANOVA";
+                        else if (struct === 'within') test = "Two-Way Repeated Measures ANOVA";
+                        else test = "Two-Way Mixed Factorial ANOVA";
+                    }
+                } else if (dv === 'ordinal') {
+                    if (struct === 'between') test = "Mann-Whitney U Test";
+                    else if (struct === 'between-multi') test = "Kruskal-Wallis Test";
+                    else if (struct === 'within') test = "Wilcoxon Signed-Rank Test";
+                    else test = "Friedman Test";
+                } else {
+                    test = "Chi-Square Test of Independence / Fisher's Exact Test";
+                }
+
+                res.innerHTML = `
+                    <h4>Recommended Test: ${test}</h4>
+                    <p>Matches your selection: <strong>${dv} DV</strong>, <strong>${ivCount} IV(s)</strong>, structural assignment <strong>${struct}</strong>.</p>
+                `;
+            }
+
+            renderQuiz() {
+                const container = document.getElementById('quiz-container');
+                container.innerHTML = QUIZ_QUESTIONS.map((q, idx) => `
+                    <div class="card" id="quiz-q-${q.id}">
+                        <div class="card-header">
+                            <h4>Question ${idx + 1} of ${QUIZ_QUESTIONS.length}</h4>
+                        </div>
+                        <p style="margin-bottom: 12px; font-weight: 500;">${q.question}</p>
+                        <fieldset>
+                            <legend class="sr-only">Answers for Question ${idx + 1}</legend>
+                            <div class="radio-group">
+                                ${q.options.map((opt, oIdx) => `
+                                    <label class="radio-label">
+                                        <input type="radio" name="quiz-q-${q.id}" value="${oIdx}">
+                                        ${opt}
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </fieldset>
+                        <div id="quiz-feedback-${q.id}" style="margin-top: 12px;" hidden></div>
+                    </div>
+                `).join('');
+            }
+
+            submitQuiz() {
+                let score = 0;
+                let answeredAll = true;
+
+                QUIZ_QUESTIONS.forEach(q => {
+                    const selected = document.querySelector(`input[name="quiz-q-${q.id}"]:checked`);
+                    const fb = document.getElementById(`quiz-feedback-${q.id}`);
+                    fb.hidden = false;
+
+                    if (!selected) {
+                        answeredAll = false;
+                        fb.className = "alert alert-warning";
+                        fb.textContent = "Please select an answer.";
+                        return;
+                    }
+
+                    const val = parseInt(selected.value);
+                    if (val === q.correct) {
+                        score++;
+                        fb.className = "alert alert-success";
+                        fb.innerHTML = `<strong>Correct!</strong> ${q.explanation}`;
+                    } else {
+                        fb.className = "alert alert-danger";
+                        fb.innerHTML = `<strong>Incorrect.</strong> ${q.explanation}`;
+                    }
+                });
+
+                const scoreCard = document.getElementById('quiz-score-card');
+                scoreCard.hidden = false;
+                document.getElementById('quiz-score-text').textContent = `You scored ${score} out of ${QUIZ_QUESTIONS.length} (${Math.round((score/QUIZ_QUESTIONS.length)*100)}%)`;
+                
+                this.announce(`Quiz submitted. Your score is ${score} out of ${QUIZ_QUESTIONS.length}.`);
+            }
+
+            resetQuiz() {
+                document.querySelectorAll('input[type="radio"]').forEach(r => {
+                    if (r.name.startsWith('quiz-q-')) r.checked = false;
+                });
+                QUIZ_QUESTIONS.forEach(q => {
+                    const fb = document.getElementById(`quiz-feedback-${q.id}`);
+                    if (fb) fb.hidden = true;
+                });
+                document.getElementById('quiz-score-card').hidden = true;
+                this.announce("Quiz reset.");
+            }
+        }
+
+        // Initialize Application on Window Load
+        window.addEventListener('DOMContentLoaded', () => {
+            window.app = new HCIWorkbenchApp();
+        });
+    </script>
+</body>
+</html>
